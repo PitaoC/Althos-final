@@ -574,7 +574,7 @@ class ViewGroup(ctk.CTkFrame):
         # Save the log entry to the MongoDB database
         try:
             ReportLogs.insert_one(log_entry)
-            print(f"Logs successfully saved to database")
+            
         except Exception as e:
             print(f"Error saving log entry to database: {e}")
 

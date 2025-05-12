@@ -26,7 +26,7 @@ class rl(ctk.CTkToplevel):
         self.group_id = group_id  
 
         self.title(f"Report logs of {self.group_name}")
-        self.geometry("800x600")
+        self.geometry("800x700")
         self.resizable(False, False) 
         self.attributes("-topmost", True)
         self.attributes("-toolwindow", True)
@@ -36,8 +36,8 @@ class rl(ctk.CTkToplevel):
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         x_position = (screen_width // 2) - (800 // 2)
-        y_position = (screen_height // 2) - (600 // 2)
-        self.geometry(f"800x600+{x_position}+{y_position}")
+        y_position = (screen_height // 2) - (700 // 2)
+        self.geometry(f"800x700+{x_position}+{y_position}")
 
         self.fullscreen = False 
 
@@ -216,23 +216,28 @@ class rl(ctk.CTkToplevel):
                     emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
                     emotion_durations[emotion] = emotion_durations.get(emotion, 0) + duration
 
+                    # Calculate the weighted total for each emotion
+                    weighted_totals = {emotion: emotion_durations[emotion] * emotion_counts[emotion] for emotion in emotion_counts}
+
                     # Handle activity based on component
                     if component in ["Mouse", "Keyboard"]:
                         activity = log.get("Status", "Unknown").strip().title()  # Use Status for activity
                     else:
-                        activity = component  # For other components, use the component name as activity
+                        continue
 
                     # Count occurrences and sum durations for activities
                     activity_counts[activity] = activity_counts.get(activity, 0) + 1
                     activity_durations[activity] = activity_durations.get(activity, 0) + duration
+                    
+                    # Calculate the weighted total for each Activity
+                    weighted_activity_totals = {activity: activity_durations[activity] * activity_counts[activity] for activity in activity_counts}
 
                 # Find the most frequent and longest duration emotion
-                most_frequent_emotion = max(emotion_counts, key=emotion_counts.get, default="Unknown")
-                longest_duration_emotion = max(emotion_durations, key=emotion_durations.get, default="Unknown")
+                most_frequent_emotion = max(weighted_totals, key=weighted_totals.get, default="Unknown")
 
                 # Find the most frequent and longest duration activity
-                most_frequent_activity = max(activity_counts, key=activity_counts.get, default="Unknown")
-                longest_duration_activity = max(activity_durations, key=activity_durations.get, default="Unknown")
+                longest_duration_activity = max(weighted_activity_totals, key=weighted_activity_totals.get, default="Unknown")
+
 
                 # Use the most frequent emotion and the longest duration activity
                 selected_emotion = most_frequent_emotion
@@ -273,7 +278,7 @@ class rl(ctk.CTkToplevel):
 
                 # Update the status label
                 status_label.config(
-                    text=f"Mapped State: {mapped_state}\nReasoning: {reasoning}"
+                    text=f"Emotion: {selected_emotion}\nActivity: {selected_activity}\nMapped State: {mapped_state}\nReasoning: {reasoning}"
                 )
 
             except Exception as e:
@@ -397,7 +402,7 @@ class rl(ctk.CTkToplevel):
 
         except Exception as e:
             print(f"Error during deletion: {e}")
-
+            
     def download_all_logs(self):
         try:
             # Fetch all report logs for the specified groupID
